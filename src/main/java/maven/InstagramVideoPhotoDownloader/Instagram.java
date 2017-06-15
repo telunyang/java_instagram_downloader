@@ -21,10 +21,6 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
@@ -42,24 +38,21 @@ public class Instagram {
 	private String src = "", name = "", extensionName = "", tmpFname = "";
 	private FileOutputStream fileOutStream;
 	private BufferedInputStream bufInStream;
-	private Document doc;
 	private Pattern p = Pattern.compile("http[s]?://[a-zA-Z0-9-._]+(/[a-zA-Z0-9-._]+)+");
 	private Matcher m;
 	
 	public static void main(String[] args)
 	{
-		
 		try
 		{
 			Instagram ig = new Instagram();
-			ig.str_ig_account = "chiling.lin";
-			ig.str_target_folder = "C:\\Users\\darren\\workspace\\InstagramVideoPhotoDownloader\\downloads\\" + ig.str_ig_account + "\\";
-			ig.str_download_list = "download_list.txt";
-			ig.scroll_num = 0;
-			ig.setInit();
-			//ig.download( (String)ig.getHTML() );
-			ArrayList<String> list = ig.clickHyperlink();
-			ig.download(list);
+			ig.str_ig_account = "gal_gadot"; //Instagram 的使用者帳號
+			ig.str_target_folder = "/Users/darrenyang/Documents/workspace/InstagramVideoPhotoDownloader/downloads/" + ig.str_ig_account + "/"; //放置擷取後檔案的放置處
+			ig.str_download_list = "download_list.txt"; //擷取出來的連結，列在檔案內
+			ig.scroll_num = 5; //捲軸下滾幾次
+			ig.setInit(); //初始化設定
+			ArrayList<String> list = ig.clickHyperlink(); //觀察圖片和影片連結，並加以擷取
+			ig.download(list); //下載檔案
 			ig = null;
 		}
 		catch(Exception e)
@@ -73,7 +66,7 @@ public class Instagram {
 	{
 		try
 		{
-			System.setProperty("webdriver.chrome.driver", "C:\\Users\\darren\\workspace\\InstagramVideoPhotoDownloader\\plugin\\chromedriver.exe");
+			System.setProperty("webdriver.chrome.driver", "/Users/darrenyang/Documents/workspace/InstagramVideoPhotoDownloader/plugin/chromedriver");
 			this.driver = new ChromeDriver();
 			this.driver.get("https://www.instagram.com/" + this.str_ig_account + "/");
 			this.fileName = new File(this.str_target_folder);
@@ -151,7 +144,7 @@ public class Instagram {
 		return contents;
 	}
 	
-	/** 測試行為 */
+	/** 觀察圖片和影片連結，並加以擷取 */
 	public ArrayList<String> clickHyperlink()
 	{
 		ArrayList<String> list = new ArrayList<String>();
@@ -349,105 +342,6 @@ public class Instagram {
 		catch(Exception e)
 		{
 			e.printStackTrace();
-		}
-	}
-	
-	/** 下載檔案 */
-	public void download(String contents)
-	{
-		try
-		{
-			doc = Jsoup.parse(contents);
-			p = Pattern.compile("http[s]?://[a-zA-Z0-9-._]+(/[a-zA-Z0-9-._]+)+");
-			Elements elm_img = doc.select("img[class=_icyx7]");
-			
-			// Create a new trust manager that trust all certificates
-			TrustManager[] trustAllCerts = new TrustManager[]{
-			    new X509TrustManager() {
-			        public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-			            return null;
-			        }
-			        public void checkClientTrusted(
-			            java.security.cert.X509Certificate[] certs, String authType) {
-			        }
-			        public void checkServerTrusted(
-			            java.security.cert.X509Certificate[] certs, String authType) {
-			        }
-			    }
-			};
-
-			// Activate the new trust manager
-			try {
-			    SSLContext sc = SSLContext.getInstance("SSL");
-			    sc.init(null, trustAllCerts, new java.security.SecureRandom());
-			    HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
-			} catch (Exception e) {}
-			
-			PrintWriter file = new PrintWriter(new BufferedWriter(new FileWriter(this.str_target_folder + this.str_download_list, true)));
-			
-			this.b = new byte[1024];
-			this.len = this.currentBits = 0;
-			this.src = this.name = this.extensionName = this.tmpFname = "";
-			
-			if (elm_img.size() > 0) 
-			{
-				for (Element img : elm_img) 
-				{
-					this.src = img.attr("src");
-					this.m = this.p.matcher(src);
-					this.name = this.extensionName = this.tmpFname = "";
-					
-					if (this.m.find()) 
-					{
-						// 準備寫入檔案
-						try 
-						{
-							this.tmpFname = this.m.group(0);
-							URL url = new URL(this.tmpFname);
-							URLConnection connection = url.openConnection();
-							this.bufInStream = new BufferedInputStream( connection.getInputStream() );
-							
-							this.extensionName = this.tmpFname.substring(this.tmpFname.lastIndexOf("."), this.tmpFname.length());// 取得副檔名
-							this.name = getCurrentDateTime() + this.extensionName;
-							
-							String savePath = this.str_target_folder + "\\" + this.name;
-							this.fileOutStream = new FileOutputStream(savePath);
-							
-							System.out.println("下載檔案[ " + m.group(0)+ " ]");
-							while ( (this.len = this.bufInStream.read(this.b, 0, this.b.length)) != -1 ) 
-							{						
-								this.fileOutStream.write(this.b, 0, this.len);
-								this.currentBits += this.len;
-							
-								System.out.println("目前下載量 [ " + (float)(this.currentBits / 1024) + " ] KB");
-							}
-							
-							//寫入連結至 download_list
-							file.println(this.m.group(0));
-							
-							if (this.fileOutStream != null) this.fileOutStream.close();
-							if (this.bufInStream != null) this.bufInStream.close();
-							
-							this.fileOutStream = null;
-							this.bufInStream = null;
-							
-							//暫時休息一下，再繼續跑迴圈
-							Thread.sleep(1500);
-							
-						} catch (Exception e) {e.printStackTrace();}
-					}
-					this.src = "";
-				}
-			}
-			file.close();
-		}
-		catch(Exception e)
-		{
-			e.printStackTrace();
-		}
-		finally
-		{
-			doc = null;
 		}
 	}
 	
