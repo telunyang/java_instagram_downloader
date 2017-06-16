@@ -49,7 +49,7 @@ public class Instagram {
 			ig.str_ig_account = "gal_gadot"; //Instagram 的使用者帳號
 			ig.str_target_folder = "/Users/darrenyang/Documents/workspace/InstagramVideoPhotoDownloader/downloads/" + ig.str_ig_account + "/"; //放置擷取後檔案的放置處
 			ig.str_download_list = "download_list.txt"; //擷取出來的連結，列在檔案內
-			ig.scroll_num = 5; //捲軸下滾幾次
+			ig.scroll_num = 2; //捲軸下滾幾次
 			ig.setInit(); //初始化設定
 			ArrayList<String> list = ig.clickHyperlink(); //觀察圖片和影片連結，並加以擷取
 			ig.download(list); //下載檔案
