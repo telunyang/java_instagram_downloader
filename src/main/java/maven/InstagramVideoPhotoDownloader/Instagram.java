@@ -66,9 +66,16 @@ public class Instagram {
 	{
 		try
 		{
+			//目前在 MacOS 設定 chromedriver，可以換成其它 os 的相關 driver，請參閱 https://chromedriver.storage.googleapis.com/index.html?path=2.30/
 			System.setProperty("webdriver.chrome.driver", "/Users/darrenyang/Documents/workspace/InstagramVideoPhotoDownloader/plugin/chromedriver");
+			
+			//新增實體
 			this.driver = new ChromeDriver();
+			
+			//導向 instagram 的網址
 			this.driver.get("https://www.instagram.com/" + this.str_ig_account + "/");
+			
+			//設定使用者 folder，沒有時會自動增加
 			this.fileName = new File(this.str_target_folder);
 			if (!this.fileName.exists()) this.fileName.mkdirs();
 		}
@@ -126,10 +133,13 @@ public class Instagram {
 			WebElement elm_body = this.driver.findElement(By.tagName("body"));
 			contents = (String) jse.executeScript("return arguments[0].innerHTML;", elm_body);
 
-			// WebElement searchBox = driver.findElement(By.name("q"));
-			// searchBox.sendKeys("ChromeDriver");
-			// searchBox.submit();
-			// Thread.sleep(5000); // Let the user actually see something!
+			/*
+			 * 下面是讓 Browser Automation 幫你在網頁上，針對特定元素(例如文字欄位或按鈕)，執行腳本設定的行為，但本例中沒用到，所以先行註解
+			 * WebElement searchBox = driver.findElement(By.name("q"));
+			 * searchBox.sendKeys("ChromeDriver");
+			 * searchBox.submit();
+			 * Thread.sleep(5000); // Let the user actually see something!
+			*/
 		}
 		catch(Exception e)
 		{
